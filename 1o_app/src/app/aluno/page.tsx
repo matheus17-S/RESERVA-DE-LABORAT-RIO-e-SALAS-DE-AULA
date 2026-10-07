@@ -11,7 +11,7 @@ interface DadosDosAlunos {
  export default async function Aluno() 
  {
     // gerar uma requisição HTTP
-    const response = await fetch("http://localhost:8080/alunos");
+    const response = await fetch("http://localhost:8080/usuarios");
 
     // dados é uma lista quer receberá os dados vindo do json da API
     const dados: DadosDosAlunos[] = await response.json()
