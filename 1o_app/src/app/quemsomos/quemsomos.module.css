@@ -15,7 +15,7 @@
 .section h2 {
     margin-bottom: 1rem;
     font-size: x-large;
-    color: green;
+    color: rgb(0, 100, 128);
 }
 
 .section p,

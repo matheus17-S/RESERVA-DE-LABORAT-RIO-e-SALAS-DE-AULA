@@ -1,145 +1,79 @@
-"use client";
+interface DadosDosUsuarios {
+  id: number;
+  cpf: string;
+  nome_completo: string;
+  data_aniversario: string;
+  celular: string;
+  email: string;
+  login: string;
+  data_cadastro: string;
+}
 
-import { useState } from "react";
+export default async function Usuarios() {
 
-export default function Usuarios() {
-    const [formulario, setFormulario] = useState({
-        cpf: "",
-        nome_completo: "",
-        data_aniversario: "",
-        celular: "",
-        email: "",
-        login: "",
-        senha: ""
-    });
+  const response = await fetch("http://localhost:8080/usuarios");
 
-    const [mensagem, setMensagem] = useState("");
+  const dados: DadosDosUsuarios[] = await response.json();
 
-    function alterarCampo(e: React.ChangeEvent<HTMLInputElement>) {
-        setFormulario({
-            ...formulario,
-            [e.target.name]: e.target.value
-        });
-    }
+  console.log("Dados dos USUÁRIOS vindo do JSON da API");
+  console.log(dados);
 
-    async function cadastrarUsuario(e: React.FormEvent) {
-        e.preventDefault();
+  return (
+    <div>
 
-        try {
-            const resposta = await fetch("http://localhost:8080/usuarios", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(formulario)
-            });
+      <h2 className="text-center mt-5 mb-2 font-bold text-2xl">
+        Listagem dos USUÁRIOS cadastrados no BD
+      </h2>
 
-            const dados = await resposta.json();
+      <div className="flex flex-col gap-4 mx-2">
 
-            if (resposta.ok) {
-                setMensagem("Usuário cadastrado com sucesso!");
+        {
+          dados.map((registro) => (
 
-                setFormulario({
-                    cpf: "",
-                    nome_completo: "",
-                    data_aniversario: "",
-                    celular: "",
-                    email: "",
-                    login: "",
-                    senha: ""
-                });
-            } else {
-                setMensagem(dados.erro || "Erro ao cadastrar usuário.");
-            }
+            <div
+              key={registro.id}
+              className="bg-gray-200 p-4 rounded-md"
+            >
 
-        } catch (erro) {
-            setMensagem("Não foi possível conectar com a API.");
+              <h4>
+                ID: {registro.id}
+              </h4>
+
+              <h2 className="font-bold">
+                Nome: {registro.nome_completo}
+              </h2>
+
+              <p>
+                CPF: {registro.cpf}
+              </p>
+
+              <p>
+                Data de aniversário: {registro.data_aniversario}
+              </p>
+
+              <p>
+                E-mail: {registro.email}
+              </p>
+
+              <p>
+                Celular: {registro.celular}
+              </p>
+
+              <p>
+                Login: {registro.login}
+              </p>
+
+              <p>
+                Data de cadastro: {registro.data_cadastro}
+              </p>
+
+            </div>
+
+          ))
         }
-    }
 
-    return (
-        <main>
-            <h1>Cadastro de Usuário</h1>
+      </div>
 
-            <form onSubmit={cadastrarUsuario}>
-
-                <div>
-                    <label>CPF</label>
-                    <input
-                        type="text"
-                        name="cpf"
-                        value={formulario.cpf}
-                        onChange={alterarCampo}
-                    />
-                </div>
-
-                <div>
-                    <label>Nome completo</label>
-                    <input
-                        type="text"
-                        name="nome_completo"
-                        value={formulario.nome_completo}
-                        onChange={alterarCampo}
-                    />
-                </div>
-
-                <div>
-                    <label>Data de aniversário</label>
-                    <input
-                        type="date"
-                        name="data_aniversario"
-                        value={formulario.data_aniversario}
-                        onChange={alterarCampo}
-                    />
-                </div>
-
-                <div>
-                    <label>Celular</label>
-                    <input
-                        type="text"
-                        name="celular"
-                        value={formulario.celular}
-                        onChange={alterarCampo}
-                    />
-                </div>
-
-                <div>
-                    <label>E-mail</label>
-                    <input
-                        type="email"
-                        name="email"
-                        value={formulario.email}
-                        onChange={alterarCampo}
-                    />
-                </div>
-
-                <div>
-                    <label>Login</label>
-                    <input
-                        type="text"
-                        name="login"
-                        value={formulario.login}
-                        onChange={alterarCampo}
-                    />
-                </div>
-
-                <div>
-                    <label>Senha</label>
-                    <input
-                        type="password"
-                        name="senha"
-                        value={formulario.senha}
-                        onChange={alterarCampo}
-                    />
-                </div>
-
-                <button type="submit">
-                    Cadastrar usuário
-                </button>
-
-            </form>
-
-            {mensagem && <p>{mensagem}</p>}
-        </main>
-    );
+    </div>
+  );
 }

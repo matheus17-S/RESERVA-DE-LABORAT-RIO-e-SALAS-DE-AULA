@@ -1,13 +1,19 @@
 import 'dotenv/config';
 import express from 'express';
 import mssql from 'mssql';
-
-const porta = process.env.PORTA;
-const stringSQL = process.env.CONNECTION_STRING;
+import cors from 'cors';
 
 // configurações
 const app = express();
+
+app.use(cors());
+
+console.log("CORS ATIVO - VERSAO NOVA DA API");
+
 app.use(express.json());
+
+const porta = process.env.PORTA;
+const stringSQL = process.env.CONNECTION_STRING;
 
 // conectar no BD
 async function conectaBD() {
@@ -19,22 +25,6 @@ async function conectaBD() {
         throw erro;
     }
 }
-
-// definir rotas
-
-app.get('/alunos', async (req, res) => {
-    const conexao = await conectaBD();
-    const result = await conexao.query("SELECT * from nodejs.aluno");
-    res.json(result.recordset);
-});
-
-app.get('/alunos/:id', async (req, res) => {
-    const idProcurado = req.params.id;
-    const conexao = await conectaBD();
-    const result = await conexao.query(`SELECT * from nodejs.aluno WHERE id=${idProcurado}`);
-    res.json(result.recordset);
-});
-
 
 // rota usuarios
 app.get('/usuarios', async (req, res) => {
@@ -147,7 +137,7 @@ app.post('/laboratorios', async (req, res) => {
 
         const conexao = await conectaBD();
 
-        const request = new mssql.Request();
+        const request = conexao.request();
 
         request.input('codigo', mssql.VarChar(20), codigo);
         request.input('nome', mssql.VarChar(100), nome);
@@ -215,9 +205,9 @@ app.post('/salas', async (req, res) => {
             localizacao
         } = req.body;
 
-        const conexao = await conectaBD();
+       const conexao = await conectaBD();
 
-        const request = new mssql.Request();
+       const request = conexao.request();
 
         request.input('codigo', mssql.VarChar(20), codigo);
         request.input('nome', mssql.VarChar(100), nome);
@@ -247,6 +237,33 @@ app.post('/salas', async (req, res) => {
 
     } catch (erro) {
         console.log("Erro ao cadastrar sala:", erro);
+
+        res.status(500).json({
+            erro: erro.message
+        });
+    }
+});
+
+//deletar salas
+app.delete('/salas/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const request = new mssql.Request();
+
+        request.input('id', mssql.Int, id);
+
+        await request.query(`
+            DELETE FROM Sala
+            WHERE id = @id
+        `);
+
+        res.json({
+            mensagem: "Sala excluída com sucesso"
+        });
+
+    } catch (erro) {
+        console.log("Erro ao excluir sala:", erro);
 
         res.status(500).json({
             erro: erro.message
