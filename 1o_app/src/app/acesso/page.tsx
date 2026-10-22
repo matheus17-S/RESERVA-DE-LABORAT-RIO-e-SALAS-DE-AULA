@@ -5,40 +5,40 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function Acesso() {
-
     const router = useRouter();
+
     const [login, setLogin] = useState("");
     const [senha, setSenha] = useState("");
 
-
-    async function fazerLogin(event: React.FormEvent) {
-
+    async function fazerLogin(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
-        const resposta = await fetch("http://localhost:8080/login", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                login: login,
-                senha: senha
-            })
-        });
+        try {
+            const resposta = await fetch("http://localhost:8080/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    login: login,
+                    senha: senha
+                })
+            });
 
-        const dados = await resposta.json();
+            const dados = await resposta.json();
 
-        if (resposta.ok) {
-           alert("Login realizado com sucesso!");
+            if (resposta.ok) {
+                alert("Login realizado com sucesso!");
 
-            document.cookie = "usuario_logado=true; path=/";
+                document.cookie = "usuario_logado=true; path=/";
 
-            router.push("/");
-
-            // Por enquanto, vamos apenas mostrar a mensagem.
-            // Depois podemos redirecionar para a página inicial.
-        } else {
-            alert(dados.erro);
+                router.push("/");
+            } else {
+                alert(dados.erro || "Login ou senha incorretos.");
+            }
+        } catch (erro) {
+            alert("Não foi possível conectar ao servidor.");
+            console.error(erro);
         }
     }
 
@@ -97,7 +97,6 @@ export default function Acesso() {
                 </Link>
 
             </form>
-
         </div>
     );
 }

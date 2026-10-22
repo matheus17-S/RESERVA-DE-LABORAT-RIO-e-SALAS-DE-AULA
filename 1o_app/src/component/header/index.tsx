@@ -32,6 +32,9 @@ export function Header()
             <Link href="/laboratorios">Laboratórios</Link>
           </li>
           <li>
+            <Link href="/reservas">Reservas</Link>
+          </li>
+          <li>
             <Link href="/quemsomos">QSomos</Link>
           </li>
           <li>

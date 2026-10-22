@@ -349,6 +349,97 @@ app.post('/login', async (req, res) => {
     }
 });
 
+// Cadastrar reserva
+app.post('/reservas', async (req, res) => {
+    try {
+        const {
+            data_inicio,
+            data_fim,
+            hora_inicio,
+            hora_fim,
+            usuario_id,
+            laboratorio_id,
+            sala_id,
+            status_id
+        } = req.body;
+
+        // Verifica se foi informado exatamente um recurso
+        const temLaboratorio = laboratorio_id != null && laboratorio_id !== "";
+        const temSala = sala_id != null && sala_id !== "";
+
+        if (temLaboratorio === temSala) {
+            return res.status(400).json({
+                erro: "Selecione um laboratório ou uma sala."
+            });
+        }
+
+        if (new Date(data_fim) < new Date(data_inicio)) {
+            return res.status(400).json({
+                erro: "A data final não pode ser anterior à data inicial."
+            });
+        }
+
+        if (hora_fim <= hora_inicio) {
+            return res.status(400).json({
+                erro: "O horário final deve ser posterior ao inicial."
+            });
+        }
+
+        const request = new mssql.Request();
+
+        request.input('data_inicio', mssql.Date, data_inicio);
+        request.input('data_fim', mssql.Date, data_fim);
+        request.input('hora_inicio', mssql.VarChar(8), hora_inicio);
+        request.input('hora_fim', mssql.VarChar(8), hora_fim);
+        request.input('usuario_id', mssql.Int, usuario_id);
+        request.input(
+            'laboratorio_id',
+            mssql.Int,
+            temLaboratorio ? Number(laboratorio_id) : null
+        );
+        request.input(
+            'sala_id',
+            mssql.Int,
+            temSala ? Number(sala_id) : null
+        );
+        request.input('status_id', mssql.Int, status_id ?? 4);
+
+        await request.query(`
+            INSERT INTO Reserva (
+                data_inicio,
+                data_fim,
+                hora_inicio,
+                hora_fim,
+                usuario_id,
+                laboratorio_id,
+                sala_id,
+                status_id
+            )
+            VALUES (
+                @data_inicio,
+                @data_fim,
+                @hora_inicio,
+                @hora_fim,
+                @usuario_id,
+                @laboratorio_id,
+                @sala_id,
+                @status_id
+            )
+        `);
+
+        return res.status(201).json({
+            mensagem: "Reserva cadastrada com sucesso."
+        });
+
+    } catch (erro) {
+        console.log("Erro ao cadastrar reserva:", erro);
+
+        return res.status(500).json({
+            erro: "Erro ao cadastrar reserva."
+        });
+    }
+});
+
 app.use('/', (req, res) => {
     return res.json({ message: "Servidor rodando" });
 });
